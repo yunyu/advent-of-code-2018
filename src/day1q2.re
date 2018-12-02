@@ -1,22 +1,20 @@
+open Belt;
 open Util;
 
-let deltas = readInputLines("1-2") |> List.map(Js.Float.fromString);
+let deltas = readInputLines("1-2")->List.map(Js.Float.fromString);
 
-let rec processDeltas = (currFreq, seenFreqs, remaining) =>
-  switch (remaining) {
-  | [delta, ...rest] =>
-    let newFreq = currFreq +. delta;
-    switch (seenFreqs |> FloatSet.find(newFreq)) {
-    | freq => freq
-    | exception Not_found =>
-      rest |> processDeltas(newFreq, seenFreqs |> FloatSet.add(newFreq))
-    };
-
-  /* Not found yet, keep on looping */
-  | [] => processDeltas(currFreq, seenFreqs, deltas)
-  };
+let rec processDeltas = (remaining, currFreq, seenFreqs) =>
+  seenFreqs->Set.has(currFreq) ?
+    currFreq :
+    (
+      switch (remaining) {
+      | [delta, ...rest] =>
+        rest->processDeltas(currFreq +. delta, seenFreqs->Set.add(currFreq))
+      | [] => deltas->processDeltas(currFreq, seenFreqs)
+      }
+    );
 
 deltas
-|> processDeltas(0.0, FloatSet.singleton(0.0))
-|> Js.Float.toString
-|> writeOutput("1-2");
+->processDeltas(0.0, Set.make(~id=(module FloatCmp)))
+->Js.Float.toString
+->Js.log;

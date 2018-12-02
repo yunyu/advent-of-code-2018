@@ -1,20 +1,19 @@
-let readFileAsLines = filename =>
-  Node.Fs.readFileAsUtf8Sync(filename)
-  |> Js.String.trim
-  |> Js.String.split("\n")
-  |> Array.to_list;
+open Belt;
+
+module FloatCmp =
+  Id.MakeComparable({
+    type t = float;
+    let cmp = Pervasives.compare;
+  });
+
+let readFileAsLines = filename => {
+  let fileContents = Node.Fs.readFileAsUtf8Sync(filename)->Js.String.trim;
+  Js.String.split("\n", fileContents)->List.fromArray;
+};
 
 let inputFilename = tag => "input/" ++ tag ++ ".txt";
-let readInputLines = tag => tag |> inputFilename |> readFileAsLines;
+let readInputLines = tag => tag->inputFilename->readFileAsLines;
 
-let outputFilename = tag => "output/" ++ tag ++ ".txt";
-let writeOutput = (tag, content) =>
-  content |> Node.Fs.writeFileAsUtf8Sync(tag |> outputFilename);
-let writeOutputLines = (tag, lines) =>
-  lines |> Array.of_list |> Js.Array.joinWith("\n") |> writeOutput(tag);
-
-module FloatSet =
-  Set.Make({
-    type t = float;
-    let compare = Pervasives.compare;
-  });
+let strToChars = str => Js.String.split("", str)->List.fromArray;
+let charsToStr = charList =>
+  Js.Array.joinWith("", charList->List.toArray);
