@@ -1,4 +1,5 @@
 open Belt;
+open CollectionUtil;
 open Util;
 
 type time = {
@@ -91,8 +92,8 @@ entries->List.forEach(({time, action}) => {
 });
 
 let getMostFreqMin = sleepPeriods =>
-  ListUtil.range(0, 59)
-  ->List.map(minute =>
+  Array.range(0, 59)
+  ->Array.map(minute =>
       (
         minute,
         sleepPeriods->ListUtil.sum(
@@ -101,15 +102,14 @@ let getMostFreqMin = sleepPeriods =>
         ),
       )
     )
-  ->ListUtil.max(((_minute, freq)) => freq)
+  ->ArrayUtil.maxElement(((_minute, freq)) => freq)
   ->Option.getExn;
 
 /* Part 1 */
 let (maxGuardId, maxTime) =
   sleepTotals
   ->HashMap.Int.toArray
-  ->List.fromArray
-  ->ListUtil.max(((_guard, sleepTime)) => float_of_int(sleepTime))
+  ->ArrayUtil.maxElement(((_guard, sleepTime)) => float_of_int(sleepTime))
   ->Option.getExn;
 let guardSleepPeriods =
   sleepPeriods->HashMap.Int.get(maxGuardId)->Option.getExn;
@@ -119,14 +119,12 @@ Js.log(maxGuardId * mostFreqMin);
 /* Part 2 */
 let mostFreqMinForGuards =
   HashMap.Int.toArray(sleepPeriods)
-  ->Array.map(entry => {
-      let (guardId, periods) = entry;
+  ->Array.map(((guardId, periods)) => {
       let (mostFreqMin, freq) = getMostFreqMin(periods);
       (guardId, mostFreqMin, freq);
-    })
-  ->List.fromArray;
+    });
 let (mostFreqGuard, mostFreqMin, _freq) =
   mostFreqMinForGuards
-  ->ListUtil.max(((_guard, _minute, freq)) => freq)
+  ->ArrayUtil.maxElement(((_guard, _minute, freq)) => freq)
   ->Option.getExn;
 Js.log(mostFreqGuard * mostFreqMin);
