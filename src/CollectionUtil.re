@@ -1,11 +1,11 @@
 open Belt;
 
 module CollectionUtil_Internal = {
-  let maxDefaultAcc = (None, min_float);
-  let maxReducer = (keyFn, currMax, value) => {
-    let (_, currKey) = currMax;
+  let maxDefaultAcc = (None, neg_infinity);
+  let maxReducer = (keyFn, acc, value) => {
+    let (_, prevKey) = acc;
     let key = keyFn(value);
-    key > currKey ? (Some(value), key) : currMax;
+    key > prevKey ? (Some(value), key) : acc;
   };
 
   let minKeyFn = (keyFn, value) => -. keyFn(value);
@@ -28,7 +28,7 @@ module ListUtil = {
     maxVal;
   };
 
-  let minElement = (lst, keyFn) => max(lst, minKeyFn(keyFn));
+  let minElement = (lst, keyFn) => maxElement(lst, minKeyFn(keyFn));
 
   let sum = (lst, valFn) => lst->List.reduce(0.0, sumReducer(valFn));
 };
@@ -41,7 +41,7 @@ module ArrayUtil = {
     maxVal;
   };
 
-  let minElement = (arr, keyFn) => max(arr, minKeyFn(keyFn));
+  let minElement = (arr, keyFn) => maxElement(arr, minKeyFn(keyFn));
 
   let sum = (arr, valFn) => arr->Array.reduce(0.0, sumReducer(valFn));
 };
