@@ -14,18 +14,14 @@ type coord = {
   top: int,
 };
 
-let parseInputLine = line => {
-  /* Strip first char */
-  let line = line->String.sub(1, String.length(line) - 1);
-  Array.(
-    /* Split by non-digit sequences */
-    switch (Js.String.splitByRe([%re "/[\D]+/"], line)->map(int_of_string)) {
-    | [|id, left, top, width, height|] =>
-      Some({id, left, top, width, height})
-    | _ => None
-    }
-  );
-};
+let parseInputLine = line =>
+  [@warning "-8"]
+  {
+    let Some(numParts) = Js.String.match(intRegex, line);
+    let [|id, left, top, width, height|] =
+      numParts->Array.map(int_of_string);
+    Some({id, left, top, width, height});
+  };
 
 let getCoords = ({left, top, width, height}) =>
   Array.(
