@@ -91,35 +91,29 @@ entries->List.forEach(({time, action}) => {
 });
 
 let getMostFreqMin = sleepPeriods =>
-  Array.(
-    range(0, 59)
-    ->map(min =>
-        (
-          min,
-          sleepPeriods->List.reduce(
-            0,
-            (
-              acc,
-              {startTime: {minute: startMin}, endTime: {minute: endMin}},
-            ) =>
-            acc + (startMin <= min && min < endMin ? 1 : 0)
-          ),
-        )
+  ListUtil.range(0, 59)
+  ->List.map(minute =>
+      (
+        minute,
+        sleepPeriods->ListUtil.sum(
+          ({startTime: {minute: startMin}, endTime: {minute: endMin}}) =>
+          startMin <= minute && minute < endMin ? 1.0 : 0.0
+        ),
       )
-    ->reduce((0, 0), ((currMin, currFreq), (min, freq)) =>
-        freq > currFreq ? (min, freq) : (currMin, currFreq)
-      )
-  );
+    )
+  ->ListUtil.max(((_minute, freq)) => freq)
+  ->Option.getExn;
 
 /* Part 1 */
 let (maxGuardId, maxTime) =
-  sleepTotals->HashMap.Int.reduce(
-    (0, 0), ((maxGuardId, maxTime), guardId, sleepTime) =>
-    sleepTime > maxTime ? (guardId, sleepTime) : (maxGuardId, maxTime)
-  );
+  sleepTotals
+  ->HashMap.Int.toArray
+  ->List.fromArray
+  ->ListUtil.max(((_guard, sleepTime)) => float_of_int(sleepTime))
+  ->Option.getExn;
 let guardSleepPeriods =
   sleepPeriods->HashMap.Int.get(maxGuardId)->Option.getExn;
-let (mostFreqMin, _) = getMostFreqMin(guardSleepPeriods);
+let (mostFreqMin, _freq) = getMostFreqMin(guardSleepPeriods);
 Js.log(maxGuardId * mostFreqMin);
 
 /* Part 2 */
@@ -129,10 +123,10 @@ let mostFreqMinForGuards =
       let (guardId, periods) = entry;
       let (mostFreqMin, freq) = getMostFreqMin(periods);
       (guardId, mostFreqMin, freq);
-    });
-let (mostFreqGuard, mostFreqMin, _) =
-  mostFreqMinForGuards->Array.reduce(
-    (0, 0, 0), ((currGuard, currMin, currFreq), (guard, min, freq)) =>
-    freq > currFreq ? (guard, min, freq) : (currGuard, currMin, currFreq)
-  );
+    })
+  ->List.fromArray;
+let (mostFreqGuard, mostFreqMin, _freq) =
+  mostFreqMinForGuards
+  ->ListUtil.max(((_guard, _minute, freq)) => freq)
+  ->Option.getExn;
 Js.log(mostFreqGuard * mostFreqMin);
