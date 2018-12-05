@@ -17,3 +17,5 @@ let readInputLines = tag => tag->inputFilename->readFileAsLines;
 let strToChars = str => Js.String.split("", str)->List.fromArray;
 let charsToStr = charList =>
   Js.Array.joinWith("", charList->List.toArray);
+
+let intRegex = [%re "/[\d]+/g"];
