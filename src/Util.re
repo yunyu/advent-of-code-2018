@@ -15,7 +15,18 @@ let inputFilename = tag => "input/" ++ tag ++ ".txt";
 let readInputLines = tag => tag->inputFilename->readFileAsLines;
 
 let strToChars = str => Js.String.split("", str)->List.fromArray;
-let charsToStr = charList =>
-  Js.Array.joinWith("", charList->List.toArray);
+let charsToStr = charList => Js.Array.joinWith("", charList->List.toArray);
 
-let intRegex = [%re "/[\d]+/g"];
+let intRegex = [%re "/[\\d]+/g"];
+
+type coordinate = {
+  x: int,
+  y: int,
+};
+
+module CoordHash =
+  Id.MakeHashable({
+    type t = coordinate;
+    let hash = Hashtbl.hash;
+    let eq = (==);
+  });
