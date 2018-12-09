@@ -1,62 +1,50 @@
 open Belt;
 open CollectionUtil;
+open Util;
 
-let getOffset = (arr, i) => {
-  let len = Array.length(arr);
-  (i mod len + len) mod len;
+/* Doubly linked circular list */
+type marble = {
+  value: int,
+  mutable prev: marble,
+  mutable next: marble,
 };
+let rec initCircle = {value: 0, prev: initCircle, next: initCircle};
+let currMarble = ref(initCircle);
 
-let lastMarble = 72019;
-
-let circle = [|0|];
-let currMarble = ref(0);
-let nextMarble = ref(currMarble^ + 1);
+let lastMarble = 72019 * 100;
 
 let numPlayers = 458;
-let scores = HashMap.Int.make(~hintSize=numPlayers);
+let scores = Array.make(numPlayers, 0.0);
 let currPlayer = ref(0);
 
-while (nextMarble^ <= lastMarble) {
-  let marbleToAdd = nextMarble^;
+Range.forEach(
+  1,
+  lastMarble,
+  marbleToAdd => {
+    if (marbleToAdd mod 23 == 0) {
+      let toRemove = currMarble^.prev.prev.prev.prev.prev.prev.prev;
+      toRemove.prev.next = toRemove.next;
+      toRemove.next.prev = toRemove.prev;
+      currMarble := toRemove.next;
 
-  if (marbleToAdd mod 23 == 0) {
-    let sevenPrev = circle->getOffset(currMarble^ - 7);
-    let toRemove = circle->Array.getExn(sevenPrev);
+      /* Scores overflow with 32-bit integers */
+      let points = float_of_int(toRemove.value + marbleToAdd);
+      Array.(
+        scores->setExn(currPlayer^, scores->getExn(currPlayer^) +. points)
+      );
+    } else {
+      let toAdd = {
+        value: marbleToAdd,
+        prev: currMarble^.next,
+        next: currMarble^.next.next,
+      };
+      toAdd.prev.next = toAdd;
+      toAdd.next.prev = toAdd;
+      currMarble := toAdd;
+    };
 
-    HashMap.Int.(
-      scores->set(
-        currPlayer^,
-        scores->get(currPlayer^)->Option.getWithDefault(0)
-        + toRemove
-        + marbleToAdd,
-      )
-    );
-
-    circle
-    ->Js.Array.spliceInPlace(~pos=sevenPrev, ~remove=1, ~add=[||], _)
-    ->ignore;
-
-    currMarble := sevenPrev;
-  } else {
-    let spliceIndex = circle->getOffset(currMarble^ + 2);
-    circle
-    ->Js.Array.spliceInPlace(
-        ~pos=spliceIndex,
-        ~remove=0,
-        ~add=[|marbleToAdd|],
-        _,
-      )
-    ->ignore;
-    currMarble := spliceIndex;
-  };
-
-  nextMarble := nextMarble^ + 1;
-  currPlayer := (currPlayer^ + 1) mod numPlayers;
-};
-
-Js.log(
-  scores
-  ->HashMap.Int.toArray
-  ->Array.map(((_, score)) => score)
-  ->ArrayUtil.maxElement(float_of_int),
+    currPlayer := (currPlayer^ + 1) mod numPlayers;
+  },
 );
+
+Js.log(scores->ArrayUtil.maxElement(identity));

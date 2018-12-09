@@ -30,3 +30,5 @@ module CoordHash =
     let hash = Hashtbl.hash;
     let eq = (==);
   });
+
+let identity = value => value;
