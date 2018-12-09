@@ -14,12 +14,10 @@ let rec parseData = data => {
 
   let children = make();
   Range.forEach(1, numChildren, _ => children->add(parseData(data)));
-
   let meta = make();
-  Range.forEach(1, numMeta, _ => meta->add(data->popExn));
 
-  let result = {children: children->toArray, meta: meta->toArray};
-  result;
+  Range.forEach(1, numMeta, _ => meta->add(data->popExn));
+  {children: children->toArray, meta: meta->toArray};
 };
 
 let data =

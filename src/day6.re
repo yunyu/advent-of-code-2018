@@ -7,8 +7,7 @@ let parseInputLine = line =>
   {
     let Some(parts) = Js.String.match(intRegex, line);
     let [|x, y|] = parts->Array.map(int_of_string);
-    let point = {x, y};
-    point;
+    {x, y};
   };
 
 let calcDistance = ({x: x1, y: y1}, {x: x2, y: y2}) =>

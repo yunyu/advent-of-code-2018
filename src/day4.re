@@ -44,8 +44,7 @@ let parseLogEntry = line =>
         Start(guardId->int_of_string);
       };
 
-    let logEntry = {time, action};
-    logEntry;
+    {time, action};
   };
 
 let entries =

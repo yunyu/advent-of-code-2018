@@ -65,14 +65,14 @@ let getDuration = goal => goal.[0]->Char.code - 'A'->Char.code + 1 + 60;
 let depends = HashMap.String.copy(graph);
 let time = ref(0);
 let workers = 5;
-let tasks =
+let taskQueue =
   PriorityQueue.make(({finish: finishA}, {finish: finishB}) =>
     finishA - finishB
   );
 let runningTasks = HashSet.String.make(~hintSize=16);
 
 while (HashMap.String.size(depends) > 0) {
-  switch (tasks->PriorityQueue.pop) {
+  switch (taskQueue->PriorityQueue.pop) {
   | Some({goal, finish}) =>
     depends->HashMap.String.remove(goal);
     runningTasks->HashSet.String.remove(goal);
@@ -88,7 +88,7 @@ while (HashMap.String.size(depends) > 0) {
   while (MutableQueue.size(roots) > 0
          && HashSet.String.size(runningTasks) < workers) {
     let root = roots->MutableQueue.popExn;
-    tasks->PriorityQueue.push({
+    taskQueue->PriorityQueue.push({
       goal: root,
       finish: time^ + getDuration(root),
     });
