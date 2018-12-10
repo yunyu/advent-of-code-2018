@@ -1,6 +1,7 @@
 open Belt;
 open CollectionUtil;
 open Util;
+include ArrayOverlay;
 
 type star = {
   mutable x: int,
@@ -43,9 +44,7 @@ Range.forEach(
           {x: x - minX, y: y - minY, dx, dy}
         );
 
-      shiftedStars->List.forEach(({x, y}) =>
-        Array.(grid->getExn(y)->setExn(x, "#"))
-      );
+      shiftedStars->List.forEach(({x, y}) => grid[y][x] = "#");
 
       Js.log(
         grid
