@@ -38,21 +38,33 @@ let getSquareTotalPower = (x, y, size) => {
   dp[x2][y2] - top - left + topLeft;
 };
 
-/* Part 1 */
-let squareSize = 3;
-
-let ((x, y), maxTotalPower) =
-  Array.makeBy(gridSize - squareSize, x =>
-    Array.makeBy(gridSize - squareSize, y => (x, y))
+let getMaxSquare = squareSize =>
+  Array.makeBy(gridSize - squareSize + 1, x =>
+    Array.makeBy(gridSize - squareSize + 1, y => (x, y))
   )
   ->Array.concatMany
   ->Array.reduce(
       (((-1), (-1)), min_int),
-      ((currMaxSq, currMaxPower), (x, y)) => {
+      ((coord, currMaxTotal), (x, y)) => {
         let totalPower = getSquareTotalPower(x, y, squareSize);
-        totalPower > currMaxPower ?
-          ((x, y), totalPower) : (currMaxSq, currMaxPower);
+        totalPower > currMaxTotal ?
+          ((x, y), totalPower) : (coord, currMaxTotal);
       },
     );
 
-Js.log((x + 1, y + 1));
+/* Part 1 */
+let ((x, y), _maxSquareTotal) = getMaxSquare(3);
+Js.log([|x + 1, y + 1|]->Js.Array.join);
+
+/* Part 2 */
+let ((x, y), size, _maxSquareTotal) =
+  Array.range(1, gridSize)
+  ->Array.reduce(
+      (((-1), (-1)), min_int, min_int),
+      ((currCoord, currSize, currMaxTotal), squareSize) => {
+        let (coord, total) = getMaxSquare(squareSize);
+        total > currMaxTotal ?
+          (coord, squareSize, total) : (currCoord, currSize, currMaxTotal);
+      },
+    );
+Js.log([|x + 1, y + 1, size|]->Js.Array.join);
