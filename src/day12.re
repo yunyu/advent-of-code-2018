@@ -12,7 +12,7 @@ let (initialState, mappings) =
         Array.range(0, initialState->String.length - 1),
         Js.String.split("", initialState),
       )
-      ->Map.Int.fromArray,
+      ->HashMap.Int.fromArray,
       mappings
       ->List.toArray
       ->Array.map(mapping => {
@@ -24,7 +24,7 @@ let (initialState, mappings) =
   };
 
 let nextState = state => {
-  let pots = Map.Int.keysToArray(state);
+  let pots = HashMap.Int.keysToArray(state);
   let minPot = pots->ArrayUtil.minElement(float_of_int)->Option.getExn;
   let maxPot = pots->ArrayUtil.maxElement(float_of_int)->Option.getExn;
 
@@ -33,7 +33,7 @@ let nextState = state => {
     potRange->map(pot => {
       let window =
         range(pot - 2, pot + 2)
-        ->map(i => state->Map.Int.getWithDefault(i, "."))
+        ->map(i => state->HashMap.Int.get(i)->Option.getWithDefault("."))
         ->Js.Array.joinWith("", _);
       (
         pot,
@@ -41,13 +41,26 @@ let nextState = state => {
       );
     })
   )
-  ->Map.Int.fromArray;
+  ->HashMap.Int.fromArray;
 };
+
+let numPlants = state =>
+  HashMap.Int.toArray(state)
+  ->ArrayUtil.sum(((pot, plant)) => plant == "#" ? float_of_int(pot) : 0.0);
 
 /* Part 1 */
 let state = ref(initialState);
 Range.forEach(1, 20, _ => state := nextState(state^));
+numPlants(state^)->Js.log;
 
-Map.Int.toArray(state^)
-->ArrayUtil.sum(((pot, plant)) => plant == "#" ? float_of_int(pot) : 0.0)
-->Js.log;
+/* Part 2 */
+let state = ref(initialState);
+
+/* Extrapolate linearly after 999 generations */
+Range.forEach(1, 999, _ => state := nextState(state^));
+let plantsIn999 = numPlants(state^);
+state := nextState(state^);
+let plantsIn1000 = numPlants(state^);
+Js.log(
+  plantsIn1000 +. (plantsIn1000 -. plantsIn999) *. (50000000000.0 -. 1000.0),
+);
