@@ -6,13 +6,15 @@ module FloatCmp =
     let cmp = Pervasives.compare;
   });
 
-let readFileAsLines = filename => {
-  let fileContents = Node.Fs.readFileAsUtf8Sync(filename)->Js.String.trim;
-  Js.String.split("\n", fileContents)->List.fromArray;
+let readFileAsLines = (filename, trim) => {
+  let fileContents = Node.Fs.readFileAsUtf8Sync(filename);
+  Js.String.split("\n", trim ? Js.String.trim(fileContents) : fileContents)
+  ->List.fromArray;
 };
 
 let inputFilename = tag => "input/" ++ tag ++ ".txt";
-let readInputLines = tag => tag->inputFilename->readFileAsLines;
+let readInputLines = (~trim=true, tag) =>
+  tag->inputFilename->readFileAsLines(trim);
 
 let strToChars = str => Js.String.split("", str)->List.fromArray;
 let charsToStr = charList => Js.Array.joinWith("", charList->List.toArray);
