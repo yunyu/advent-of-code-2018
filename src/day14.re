@@ -1,26 +1,28 @@
 open Belt;
 
-let getNewRecipes = (recipe1, recipe2) => {
-  let total = recipe1 + recipe2;
-  total < 10 ? [|total|] : [|total mod 10, total / 10|];
-};
-
 let generateScores = predicate => {
   open Js.Array;
   open Option;
+
   let scores = [|3, 7|];
   let i1 = ref(0);
   let i2 = ref(1);
+
   while (!predicate(scores)) {
     let r1 = scores[i1^]->getExn;
     let r2 = scores[i2^]->getExn;
-    let newRecipes = getNewRecipes(r1, r2);
-    while (newRecipes->length > 0) {
-      ignore(scores->push(newRecipes->pop->getExn, _));
-    };
+
+    let total = r1 + r2;
+    ignore(
+      total < 10 ?
+        scores->push(total, _) :
+        scores->pushMany([|total / 10, total mod 10|], _),
+    );
+
     i1 := (i1^ + 1 + r1) mod scores->length;
     i2 := (i2^ + 1 + r2) mod scores->length;
   };
+
   scores;
 };
 
@@ -33,8 +35,12 @@ let getLastScores = (scores, amt) =>
 
 /* Part 1 */
 let input = 360781;
-let scores = generateScores(scores => scores->Js.Array.length == input + 10);
-Js.log(scores->getLastScores(10));
+let scores = generateScores(scores => scores->Js.Array.length >= input + 10);
+Js.Array.(
+	scores
+	->slice(~start=input, ~end_=input + 10)
+	->joinWith("", _)
+)->Js.log;
 
 /* Part 2 */
 let input = string_of_int(input);
@@ -50,5 +56,4 @@ Js.log(
     - checkWindow
     + scores->getLastScores(checkWindow)->Js.String.indexOf(input, _)
   )
-  ->string_of_int,
 );
